@@ -27,6 +27,6 @@ This repository contains 2 subfolders:
         - Received from J. Blaszczak 14 June 2019   
         - Contains spreadsheet with summary information of metabolism estimates from each site as well as information about slope, elevation, and catchment area identified from NHDPlusV2 using the COMID of each site  
 
-2. The "R" folder contains .R files containing functions used in the main analysis script.  
+2. The "R" folder contains .R files that store any functions used in the main analysis script.  
 
 The root folder the primary analysis files. "Hypoxia_spatial.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates and initial plot of the data sites.  
