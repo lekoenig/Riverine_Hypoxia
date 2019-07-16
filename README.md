@@ -1,7 +1,7 @@
 # Riverine_Hypoxia
 Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
-This repository contains 2 subfolders:
+This repository contains 3 subfolders:
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
     Compiled_SumStats_2019_07_15.csv  		  
@@ -28,5 +28,7 @@ This repository contains 2 subfolders:
         - Contains spreadsheet with summary information of metabolism estimates from each site as well as information about slope, elevation, and catchment area identified from NHDPlusV2 using the COMID of each site  
 
 2. The "R" folder contains .R files that store any functions used in the main analysis script.  
+
+3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
 
 The root folder the primary analysis files. "Hypoxia_spatial.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates and initial plot of the data sites.  
