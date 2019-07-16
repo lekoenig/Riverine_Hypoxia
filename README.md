@@ -5,7 +5,7 @@ This repository contains 2 subfolders:
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
     Compiled_SumStats_2019_07_15.csv  		  
-        Received from J. Blaszczak 15 July 2019   
+       Received from J. Blaszczak 15 July 2019   
         Contains updated spreadsheet with the coordinate reference systems indicated in the "Coord_Units" column  
     Compiled_SumStats_2019_07_11.csv		  
         Received from J. Blaszczak 12 July 2019  
