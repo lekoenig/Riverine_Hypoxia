@@ -1,7 +1,7 @@
 # Riverine_Hypoxia
 Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
-This repository contains 3 subfolders:
+*This repository contains 3 subfolders:*
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
     Compiled_SumStats_2019_07_15.csv  		  
