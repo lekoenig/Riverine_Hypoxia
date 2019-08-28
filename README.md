@@ -1,7 +1,7 @@
 # Riverine_Hypoxia
 Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
-*This repository contains 3 subfolders:*
+**This repository contains 3 subfolders:**
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
     Compiled_SumStats_2019_07_15.csv  		  
@@ -31,4 +31,8 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
 3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
 
-The root folder the primary analysis files. "Hypoxia_spatial.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates and initial plot of the data sites.  
+**The root folder the primary analysis files:**  
+  
+"01_Prep_spatial_data.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates an initial plot of the data sites.  
+  
+"02_USA_data_JoinNHD.R" is a script that spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat).
