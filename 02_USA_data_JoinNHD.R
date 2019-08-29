@@ -50,6 +50,7 @@ source("./R/Analysis_Functions.R")
     flowline <- flowline[-which(flowline$FTYPE=="Coastline"),]
     saveRDS(flowline,file="./output/spatial/nhdplus_flowlines_omitCoastlines.rds")
     rm(staged_data)
+    
     # If flowline has previously been saved:
     flowline <- readRDS("./output/spatial/nhdplus_flowlines_omitCoastlines.rds")
   
@@ -60,20 +61,20 @@ source("./R/Analysis_Functions.R")
   CRS.def <- 5070   #https://spatialreference.org/ref/sr-org/epsg-5070/
 
   if(st_crs(dat.usa)$proj4string == st_crs(CRS.def)$proj4string){
-    sites.proj <- dat.usa %>% 
+    sites.proj <- dat.usa[c(1:5000),] %>% 
                   # subset by extent of nhd.region polygon:
                   .[nhd.region,] %>% 
                   # identify VPU region and add coordinates in correct projection:
-                  mutate(vpu = st_intersection(.,nhd.region)$VPUID,
+                  mutate(vpu = st_join(.,nhd.region)$VPUID,
                          X = st_coordinates(.)[,1],
                          Y = st_coordinates(.)[,2])
   } else {
-    sites.proj <- dat.usa %>% 
+    sites.proj <- dat.usa[c(1:5000),] %>% 
                   # subset by extent of nhd.region polygon:
                   .[nhd.region,] %>% 
                   st_transform(CRS.def) %>% 
                   # identify VPU region and add coordinates in correct projection:
-                  mutate(vpu = st_intersection(.,nhd.region)$VPUID,
+                  mutate(vpu = st_join(.,nhd.region)$VPUID,
                          X = st_coordinates(.)[,1],
                          Y = st_coordinates(.)[,2])
   }
@@ -97,7 +98,8 @@ source("./R/Analysis_Functions.R")
     }
     
     nhd.dat <- do.call("rbind",nhd.dat.ls)
-
+    saveRDS(nhd.dat,"./output/Hypoxia_dat_USA_JoinNHD_20190812.rds")
+    
     # compare output with output from ArcGIS:
     all.equal(gis.compare$X,nhd.dat$db_ID)
     all.equal(gis.compare$COMID,nhd.dat$COMID)
