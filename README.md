@@ -27,12 +27,14 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
         - Received from J. Blaszczak 14 June 2019   
         - Contains spreadsheet with summary information of metabolism estimates from each site as well as information about slope, elevation, and catchment area identified from NHDPlusV2 using the COMID of each site  
 
-2. The "R" folder contains .R files that store any functions used in the main analysis script.  
+2. The "R" folder contains .R files that store any functions used in the main analysis scripts.  
 
 3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
 
-**The root folder the primary analysis files:**  
+**The root folder contains the primary analysis files:**  
   
 "01_Prep_spatial_data.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates an initial plot of the data sites.  
   
-"02_USA_data_JoinNHD.R" is a script that spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat).
+"02_USA_data_JoinNHD.R" is a script that spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat).  
+  
+"03_Calculate_slope.R" is a script that estimates stream channel slope for each site.  
