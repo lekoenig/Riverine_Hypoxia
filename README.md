@@ -21,6 +21,6 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
     - spatially joins sites around the globe to a unique HydroATLAS flowline (https://www.hydrosheds.org/page/hydroatlas)  
     - estimates stream channel slope for each site
     
-    **Note that to run Hypoxia_SpatialAnalyses.R, you will need to download HydroATLAS data and store locally.**  
+**Note that to run Hypoxia_SpatialAnalyses.R, you will need to download HydroATLAS data and store locally.**  
     - Download folder "RiverATLAS_Data_V10_shp.zip" [https://figshare.com/articles/HydroATLAS_version_1_0/9890531] and store in /data/spatial subfolder.  
 
