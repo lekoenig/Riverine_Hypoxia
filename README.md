@@ -4,6 +4,10 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 **This repository contains 3 subfolders:**
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
+    Compiled_SumStats_2019_10_08.csv  		  
+        - Received from J. Blaszcak 8 October 2019
+        - Contains updated spreadsheet with coordinate reference systems corrected/checked  
+
     Compiled_SumStats_2019_07_15.csv  		  
         - Received from J. Blaszczak 15 July 2019   
         - Contains updated spreadsheet with the coordinate reference systems indicated in the "Coord_Units" column  
