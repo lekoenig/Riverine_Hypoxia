@@ -4,8 +4,13 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 **This repository contains 3 subfolders:**
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
-    Compiled_SumStats_2019_10_08.csv  		  
-        - Received from J. Blaszcak 8 October 2019
+    GRDO_FinalSumStats files
+        - Received from J. Blaszczak on date given in file name
+        - Contain updates and fixes to lat/lon coordinates for many sites within the continental U.S.
+        - Current script uses 2020_03_04 data file
+
+    Compiled_SumStats_2019_10_08.csv
+        - Received from J.  Blaszczak 8 October 2019
         - Contains updated spreadsheet with coordinate reference systems corrected/checked  
 
     Compiled_SumStats_2019_07_15.csv  		  
@@ -13,32 +18,22 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
         - Contains updated spreadsheet with the coordinate reference systems indicated in the "Coord_Units" column  
     
     Compiled_SumStats_2019_07_11.csv		  
-        - Received from J. Blaszczak 12 July 2019  
+        - Received from J. Blaszczak 12 July 2019
         - Update contains correct lat/lon coordinates for Argentina sites  
     
     Compiled_SumStats_2019_04_26.csv  		    
-        - Downloaded from GoogleDrive on 5 June 2019. Contains global oxygen sites database  
-  
-    USGS_PowellCenter_Stats.csv   			    
-        - Received from J. Blaszczak 14 June 2019   
-        - Contains spreadsheet with the summarized oxygen data  
-        - n_time is the number of measurements per site   
-        - tdiff_sec is the number of seconds between each measurement  
-        - DOmgL_X5, etc. represent the different quantiles of the DO distribution per site  
-        - Hyp_pr_sub2, etc. are estimates of frequency and are calculated as the number of DO measurements below the mg/L thresholds 2,3,4, and 5 divided by the total number of DO measurements for that site  
-        
-    Powell_NHD_sum.csv   				            
-        - Received from J. Blaszczak 14 June 2019   
-        - Contains spreadsheet with summary information of metabolism estimates from each site as well as information about slope, elevation, and catchment area identified from NHDPlusV2 using the COMID of each site  
+        - Downloaded from GoogleDrive on 5 June 2019. Contains global oxygen sites database
 
 2. The "R" folder contains .R files that store any functions used in the main analysis scripts.  
 
 3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
 
 **The root folder contains the primary analysis files:**  
-  
-"01_Prep_spatial_data.R" is a script that brings in the raw data, projects the data into a single, uniform coordinate reference system (WGS84), and creates an initial plot of the data sites.  
-  
-"02_USA_data_JoinNHD.R" is a script that spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat).  
-  
-"03_Calculate_slope.R" is a script that estimates stream channel slope for each site.  
+
+"Hypoxia_SpatialAnalyses.R" is a script that:
+    - brings in the raw data
+    - projects to a uniform coordinate reference system
+    - spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat)
+    - spatially joins sites around the globe to a unique HydroATLAS flowline (https://www.hydrosheds.org/page/hydroatlas)
+    - estimates stream channel slope for each site
+
