@@ -1,5 +1,5 @@
 ## The objective of this script is to link sites from the global hypoxia database (GRDO) to U.S. National Hydrography Dataset (NHD) flowlines and to global HydroSHEDS flowlines and associated HydroATLAS covariates
-## Last updated 24 April 2020
+## Last updated 6 July 2020
 ## LE Koenig
 
 # Install packages if needed
@@ -25,9 +25,25 @@ library(doSNOW)          # parallelize R functions
 source("./R/Analysis_Functions.R")
 
 # Save session info as metadata:
-writeLines(capture.output(sessionInfo()), paste("./output/data_processed/Metadata",format(Sys.Date(),"%Y%m%d"),"_Rsession.txt",sep=""))
-writeLines(capture.output(sf_extSoftVersion()), paste("./output/data_processed/Metadata_",format(Sys.Date(),"%Y%m%d"),"_SpatialVersion.txt",sep=""))
+# Start writing to an output file
+sink(paste("./output/data_processed/Metadata_Rsession_",format(Sys.Date(),"%Y%m%d"),".txt",sep=""))
 
+cat("=============================\n")
+cat("sf package dependencies\n")
+cat("=============================\n")
+capture.output(sf_extSoftVersion())
+               
+cat("\n")
+cat("\n")
+
+cat("=============================\n")
+cat("R session info\n")
+cat("=============================\n")
+
+capture.output(sessionInfo())
+
+# Stop writing to the file
+sink()
 
 
 ## ============================================================ ##
@@ -35,7 +51,7 @@ writeLines(capture.output(sf_extSoftVersion()), paste("./output/data_processed/M
 ## ============================================================ ##
 
 ## Import river hypoxia summary stats (compiled by J. Blaszczak)
-hypoxia.dat <- read.csv("./data/GRDO_FinalSumStats_2020_03_04.csv",header=T,stringsAsFactors=FALSE)
+hypoxia.dat <- read.csv("./data/GRDO_FinalSumStats_2020_06_09.csv",header=T,stringsAsFactors=FALSE)
 
 
 ## ============================================================ ##
@@ -65,7 +81,8 @@ unique(hypoxia.dat$Coord_Units)
         st_as_sf(coords=c("Longitude","Latitude"),crs=4326) 
 
       # NAD27 sites:
-      # note that I've noticed differences between machines in st_transform results from NAD27 only. If no shift is observed, try lwgeom::st_transform_proj:
+      # Note that I've noticed differences between machines in st_transform results from NAD27 only. 
+      # If no shift is observed, try lwgeom::st_transform_proj:
       hypoxia.dat.NAD27sub.projectWGS84 <- hypoxia.dat[which(hypoxia.dat$Coord_Units=="NAD27"),] %>%
         # convert to spatial object:
         st_as_sf(coords=c("Longitude","Latitude"),crs=4267) %>%
@@ -124,7 +141,8 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
          st_transform(.,crs=54009)
   
   # Identify which points fall over the ocean:
-  ocean.intersect <- st_intersects(oceans,pts,sparse=FALSE)
+  #ocean.intersect <- st_intersects(oceans,pts,sparse=FALSE)
+  ocean.intersect <- st_covers(oceans,st_buffer(pts,1500),sparse=FALSE)
   ocean.sites <- hypoxia.dat.merged[which(ocean.intersect=="TRUE"),] %>% st_as_sf(.)
 
   # Add a flag to GRDO merged dataset:
@@ -151,6 +169,34 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
   #hypoxia.dat.merged <- hypoxia.dat.merged %>% mutate(land_flag = split(.,1:nrow(hypoxia.dat.merged)) %>% purrr::map(intersects.land) %>% unlist(.) %>% as.character(.))
   #hypoxia.dat.merged$flag <- ifelse(hypoxia.dat.merged$land_flag=="TRUE",NA,"ocean")
   
+## Find sites that are plotting within one of the Great Lakes:
+  
+  # Download the global "lakes" data from Natural Earth Data: 
+  download.file("http://www.naturalearthdata.com/http//www.naturalearthdata.com/download/10m/physical/ne_10m_lakes.zip", 
+                destfile = './data/spatial/ne_10m_lakes.zip')
+  
+  # Unzip the file and read in the shapefile:
+  unzip(zipfile = "./data/spatial/ne_10m_lakes.zip", exdir = "./data/spatial/ne_lakes_10m")
+  
+  # Load lakes data layer and transform crs of hypoxia data locations (using albers equal area projection):
+  lakes <- st_read(dsn= "./data/spatial/ne_lakes_10m/",layer="ne_10m_lakes") %>% 
+    st_transform(.,crs=5070) %>%
+    filter(.,name == "Lake Michigan"|name=="Lake Huron"|name=="Lake Erie"|name=="Lake Superior"|name=="Lake Ontario")
+  pts <- hypoxia.dat.merged %>% 
+    st_transform(.,crs=5070)
+  
+  # Identify which points fall over one of the Great Lakes:
+  lakes.intersect <- st_covers(st_union(lakes),st_buffer(pts,1500),sparse=FALSE)
+  lakes.sites <- hypoxia.dat.merged[which(lakes.intersect=="TRUE"),] %>% st_as_sf(.)
+  
+  # Add a flag to GRDO merged dataset:
+  hypoxia.dat.merged$flag[which(lakes.intersect=="TRUE")] <- "GreatLakes"
+  # How many sites intersect the Great Lakes?
+  length(which(hypoxia.dat.merged$flag=="GreatLakes"))
+  
+  # remove unzipped ocean shp files to save storage space:
+  unlink(x = "./data/spatial/ne_lakes_10m",recursive=T)
+  
 
 ## ============================================================ ##
 ##                       Save merged dataset                    ##
@@ -163,9 +209,9 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
   #                  st_write(.,"./output/data_spatial/GRDO_merged_20200317.shp")
 
   # Export csv:
-  #hypoxia.dat.export <- hypoxia.dat.merged[,c("X","V1",".id","SiteID","DB_Source","DB_ID","Lat_WGS84","Lon_WGS84","flag")] %>%
-  #                      st_drop_geometry(.)
-  #write.csv(hypoxia.dat.export,"./output/data_processed/GRDO_merged_20200319.csv",row.names = FALSE)
+  hypoxia.dat.export <- hypoxia.dat.merged[,c("X","V1",".id","SiteID","DB_Source","DB_ID","Lat_WGS84","Lon_WGS84","flag")] %>%
+                        st_drop_geometry(.)
+  write.csv(hypoxia.dat.export,paste("./output/data_processed/GRDO_merged_",format(Sys.Date(),"%Y%m%d"),".csv",sep=""),row.names = FALSE)
 
 
 ## ============================================================ ##
@@ -186,10 +232,17 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
     usa.bbox <- st_bbox(st_transform(nhd.region.Lower48,4326))
     HI.bbox <- st_bbox(st_transform(nhd.region.HI,4326))
     PR.bbox <- st_bbox(st_transform(nhd.region.PR,4326))
+    AK.bbox <- data.frame(xmin= -169.10156, ymin= 47.15984, xmax= -123.04688, ymax= 71.69129)
   
     # Subset contiguous USA sites:
     hypoxia.dat.merged.usa <- hypoxia.dat.merged[,c("X","V1",".id","SiteID","DB_Source","DB_ID","Lat_WGS84","Lon_WGS84","flag")] %>%
                               filter(.,Lat_WGS84 > usa.bbox$ymin & Lat_WGS84 < usa.bbox$ymax & Lon_WGS84 > usa.bbox$xmin & Lon_WGS84 < usa.bbox$xmax) %>%
+                              # Project to albers equal area conic [https://www.epa.gov/waterdata/spatial-data-waters]:
+                              st_transform(.,crs=5070)
+    
+    # Subset Alaska sites (note that AK is not included in NHDPlusV2):
+    hypoxia.dat.merged.AK <- hypoxia.dat.merged[,c("X","V1",".id","SiteID","DB_Source","DB_ID","Lat_WGS84","Lon_WGS84","flag")] %>%
+                              filter(.,Lat_WGS84 > AK.bbox$ymin & Lat_WGS84 < AK.bbox$ymax & Lon_WGS84 > AK.bbox$xmin & Lon_WGS84 < AK.bbox$xmax) %>%
                               # Project to albers equal area conic [https://www.epa.gov/waterdata/spatial-data-waters]:
                               st_transform(.,crs=5070)
     
@@ -205,7 +258,7 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
                              filter(.,Lat_WGS84 > PR.bbox$ymin & Lat_WGS84 < PR.bbox$ymax & Lon_WGS84 > PR.bbox$xmin & Lon_WGS84 < PR.bbox$xmax) %>%
                              # Project to albers equal area conic, adjsuted for Puerto Rico [https://www.epa.gov/waterdata/spatial-data-waters]:
                              st_transform(.,crs = "+proj=aea +lat_1=8 +lat_2=18 +lat_0=3 +lon_0=-66 +x_0=0 +y_0=0 +datum=NAD83 +units=m +no_defs")
-    
+
     # Plot usa hypoxia subset and check projection:
     #mapview(hypoxia.dat.merged.usa) 
     st_crs(hypoxia.dat.merged.usa)
@@ -251,12 +304,12 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
   # Join GRDO locations with NHDPlus_V2 flowlines
       
     # Match locations to appropriate VPU hydroregion
-    if(st_crs(hypoxia.dat.merged.usa)$proj4string == sf::st_crs(CRS.def)$proj4string){
-      hypoxia.dat.merged.usa <- hypoxia.dat.merged.usa %>% 
-        # identify VPU region:
-        mutate(nhd_vpu_intsct = st_join(.,nhd.region.Lower48)$VPUID,
-               nhd_vpu = nhd.region.Lower48$VPUID[st_nearest_feature(.,nhd.region.Lower48)])
-    } else {paste("warning: projections for point data and hydroregion data do not match")}
+    #if(st_crs(hypoxia.dat.merged.usa)$proj4string == sf::st_crs(CRS.def)$proj4string){
+    #  hypoxia.dat.merged.usa <- hypoxia.dat.merged.usa %>% 
+    #    # identify VPU region:
+    #    mutate(nhd_vpu_intsct = st_join(.,nhd.region.Lower48)$VPUID,
+    #           nhd_vpu = nhd.region.Lower48$VPUID[st_nearest_feature(.,nhd.region.Lower48)])
+    #} else {paste("warning: projections for point data and hydroregion data do not match")}
    
     hypoxia.dat.merged.HI$nhd_vpu <- "20"
     hypoxia.dat.merged.PR$nhd_vpu <- "21"
@@ -266,17 +319,17 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
       # *Note that this process will take a long time to run across the entire GRDO database (there are 4 functions in Analysis_Functions.R to choose from for joining GRDO points to NHDPlusV2 flowlines (vary by helper function, lat/lon vs. projected data, etc.)
     
     # Continental U.S.: join points to NHDPlus_V2:
-    hypoxia.dat.merged.usa <- hypoxia.dat.merged.usa %>% select(-nhd_vpu_intsct)
+    #hypoxia.dat.merged.usa <- hypoxia.dat.merged.usa %>% select(-nhd_vpu_intsct)
     
       # define function to monitor progress of foreach:
       progress <- function(n) cat(sprintf("row %d is complete\n", n))
       opts <- list(progress=progress)
       # register parallel backend:
-      cl <- parallel::makeCluster(4,outfile="")
+      cl <- parallel::makeCluster(3,outfile="")
       doSNOW::registerDoSNOW(cl)
       # join points to NHD flowlines (minimize geodesic distance):
       GRDO_JoinNHD_ls <- foreach(i=1:length(hypoxia.dat.merged.usa$DB_ID),.packages = c("dplyr","sf"),.options.snow = opts,.errorhandling = 'remove') %dopar% {
-        dat <- link_comid4(flowline.data = flowline,points = hypoxia.dat.merged.usa[i,],vpu = hypoxia.dat.merged.usa$nhd_vpu[i])
+        dat <- link_comid5(flowline.data = flowline,points = hypoxia.dat.merged.usa[i,],vpu.polygon.data = nhd.region.Lower48,max.dist=20000)
         return(dat)
       }
       # close parallel cores:
@@ -299,8 +352,8 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
       parallel::stopCluster(cl)
       
       # combine list into a data frame:
-      GRDO_JoinNHD_HI <- do.call("rbind",GRDO_JoinNHD_HI_ls)
-      rm(GRDO_JoinNHD_HI_ls)
+      GRDO_JoinNHD_HI <- do.call("rbind",GRDO_JoinNHD_HI_ls) %>% select(-nhd_vpu)
+      rm(GRDO_JoinNHD_HI_ls) 
       
     # Puerto Rico: join points to NHDPlus_V2:
       # register parallel backend:
@@ -315,7 +368,7 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
       parallel::stopCluster(cl)
       
       # combine list into a data frame:
-      GRDO_JoinNHD_PR <- do.call("rbind",GRDO_JoinNHD_PR_ls)
+      GRDO_JoinNHD_PR <- do.call("rbind",GRDO_JoinNHD_PR_ls) %>% select(-nhd_vpu)
       rm(GRDO_JoinNHD_PR_ls)
     
       # Combine joined NHD data sets:
@@ -385,14 +438,13 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
 ## Load RiverATLAS data (downloaded from https://www.hydrosheds.org/page/hydroatlas on 30 December 2019)
   
   # Unzip folder that contains the river flowlines:      
-  #unzip("/Users/LKoenig/Documents/SpatialData/HydroATLAS/RiverATLAS_Data_v10_shp.zip",exdir="/Users/LKoenig/Documents/SpatialData/HydroATLAS/")
   unzip("./data/spatial/RiverATLAS_Data_v10_shp.zip",exdir="./data/spatial/")
   
   # Create folder to house regional joined data:
   dir.create("./output/data_processed/Regional_HydroATLAS_joins")
   
   # Define bounds for each of the shapefiles given in the HydroATLAS download:
-  # [Note that Hawaii sites (n = 486) are not represented in HydroATLAS]
+  # [Note that Hawaii sites are not represented in HydroATLAS]
   shp_data <- data.frame(file = c("rvrAtlas.na","rvrAtlas.af","rvrAtlas.ar","rvrAtlas.as","rvrAtlas.au",
                                   "rvrAtlas.eu","rvrAtlas.gr","rvrAtlas.sa.north","rvrAtlas.sa.south","rvrAtlas.si"),
                          xmin = c(-137.935417,-17.99375,-179.99792,57.639583,95.10417,-24.47292,-72.66458,-91.65625,-80.7791667,59.01667),
@@ -746,7 +798,7 @@ length(hypoxia.dat$DB_ID) == length(hypoxia.dat.merged$DB_ID)
     
     # Choose covariate columns that are of interest for GRDO database:
     GRDO_HydroATLAS_data_export <- GRDO_HydroATLAS_data2[,c("X","V1",".id","SiteID","DB_Source","DB_ID","Lat_WGS84","Lon_WGS84","flag",
-                              "HYRIV_ID","CATCH_SKM","UPLAND_SKM","LENGTH_KM","ORD_STRA","dis_m3_pyr","run_mm_cyr","ria_ha_csu","ele_mt_cav","ele_mt_cmn",
+                              "HYRIV_ID","HydroATLAS_near_dist_m","CATCH_SKM","UPLAND_SKM","LENGTH_KM","ORD_STRA","dis_m3_pyr","run_mm_cyr","ria_ha_csu","ele_mt_cav","ele_mt_cmn",
                               "ele_mt_cmx","slp_dg_cav","slp_dg_uav","sgr_dk_rav","tmp_dc_cyr","tmp_dc_uyr","tmp_dc_c01","tmp_dc_c02","tmp_dc_c03","tmp_dc_c04",
                               "tmp_dc_c05","tmp_dc_c06","tmp_dc_c07","tmp_dc_c08","tmp_dc_c09","tmp_dc_c10","tmp_dc_c11","tmp_dc_c12","pre_mm_cyr","pre_mm_uyr",
                               "pre_mm_c01","pre_mm_c02","pre_mm_c03","pre_mm_c04","pre_mm_c05","pre_mm_c06","pre_mm_c07","pre_mm_c08","pre_mm_c09","pre_mm_c10",
@@ -794,9 +846,5 @@ library(geosphere)     # geospatial analysis in R
   # save slope data:
   saveRDS(GRDO_slope_DEM,paste("./output/data_processed/GRDO_slope_",format(Sys.Date(),"%Y%m%d"),".rds",sep=""))
   rm(GRDO_slope_DEM)
-  
-  
-  
-  
   
   
