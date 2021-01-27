@@ -8,6 +8,11 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
         - Received from J. Blaszczak on 4 March 2020
         - Contains updates and fixes to lat/lon coordinates for many sites within the continental U.S.  
 
+    GRDO_FinalSumStats_2020_06_09.csv  
+	- Received from J. Blaszczak on 9 July 2020  
+	- Contains a few fixes to lat/lon coordinates for sites within the continental U.S., and includes new data sets from Canada that were missing from the 4 March summary file.  
+	- This is the version of the data used to develop the manuscript.  
+
 2. The "R" folder contains .R files that store any functions used in the main analysis scripts.  
 
 3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
