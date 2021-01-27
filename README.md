@@ -14,13 +14,17 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
 **The root folder contains the primary analysis files:**  
 
-"Hypoxia_SpatialAnalyses.R" is a script that:  
+Hypoxia_SpatialAnalyses.R is a script that:  
     - brings in the raw data    
     - projects to a uniform coordinate reference system  
     - spatially joins sites within the United States to a unique NHDV2 COMID, which is then linked to the StreamCat covariate database (https://www.epa.gov/national-aquatic-resource-surveys/streamcat)  
     - spatially joins sites around the globe to a unique HydroATLAS flowline (https://www.hydrosheds.org/page/hydroatlas)  
     - estimates stream channel slope for each site
     
+Hypoxia_ExportSpatialCovariates.R is a script that:  
+    - combines analyses into a single file  
+    - outputs metadata and data dictionary  
+
 **Note that to run Hypoxia_SpatialAnalyses.R, you will need to download HydroATLAS data and store locally.**  
     - Download folder "RiverATLAS_Data_V10_shp.zip" [https://figshare.com/articles/HydroATLAS_version_1_0/9890531] and store in /data/spatial subfolder.  
 
