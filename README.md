@@ -4,7 +4,7 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 **This repository contains 3 subfolders:**
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
- 	GRDO_FinalSumStats_2020_06_09.csv  
+    GRDO_FinalSumStats_2020_06_09.csv  
     - received from J. Blaszczak on 9 July 2020  
     - contains a few fixes to lat/lon coordinates for sites within the continental U.S., and includes new data sets from Canada that were missing from the previous summary file.  
   
