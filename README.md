@@ -1,7 +1,7 @@
 # Riverine_Hypoxia
 Contains data and scripts used for the Global Extent of Riverine Hypoxia project
 
-**This repository contains 3 subfolders:**
+**This repository contains 2 subfolders:**
 1. The "data" folder contains raw data used in the analyses. Within this folder, there are multiple files containing data:
 
     GRDO_FinalSumStats_2020_06_09.csv  
@@ -10,7 +10,6 @@ Contains data and scripts used for the Global Extent of Riverine Hypoxia project
   
 2. The "R" folder contains .R files that store any functions used in the main analysis scripts.  
 
-3. The "output" folder contains any derived datasets or figures that were generated during the analysis.  
 
 **The root folder contains the primary analysis files:**  
 
